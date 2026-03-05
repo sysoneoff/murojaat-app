@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Murojaat</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --blue:    #1A3A6B;
+    --blue2:   #25528F;
+    --gold:    #C8A84B;
+    --gold2:   #E6C96A;
+    --cream:   #F7F4EE;
+    --white:   #FFFFFF;
+    --gray:    #8492A6;
+    --border:  #DDD8CE;
+    --red:     #C0392B;
+    --green:   #1A7A4A;
+    --shadow:  0 4px 24px rgba(26,58,107,0.10);
+    --radius:  14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--cream);
+    font-family: 'Mulish', sans-serif;
+    color: var(--blue);
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue2) 100%);
+    padding: 28px 24px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(200,168,75,0.12);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -20px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .header-inner { position: relative; z-index: 1; }
+
+  .emblem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .emblem-icon {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 2px 12px rgba(200,168,75,0.4);
+  }
+  .emblem-text { color: var(--white); }
+  .emblem-text .org { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.75; font-weight: 500; }
+  .emblem-text .dept { font-size: 14px; font-weight: 700; line-height: 1.2; }
+
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--white);
+    font-size: 22px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    color: rgba(255,255,255,0.65);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  /* ── STEP PROGRESS ── */
+  .progress-wrap {
+    background: var(--white);
+    padding: 16px 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 13px;
+    left: calc(50% + 16px);
+    right: calc(-50% + 16px);
+    height: 2px;
+    background: var(--border);
+    transition: background 0.4s;
+  }
+  .step.done:not(:last-child)::after { background: var(--gold); }
+
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray);
+    transition: all 0.3s;
+  }
+  .step.active .step-dot {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: var(--white);
+    box-shadow: 0 2px 10px rgba(26,58,107,0.3);
+  }
+  .step.done .step-dot {
+    border-color: var(--gold);
+    background: var(--gold);
+    color: var(--white);
+  }
+  .step-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gray);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .step.active .step-label { color: var(--blue); }
+  .step.done .step-label   { color: var(--gold); }
+
+  /* ── BODY ── */
+  .body { padding: 0 20px 32px; }
+
+  /* ── SLIDE ── */
+  .slide {
+    display: none;
+    animation: slideIn 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active { display: block; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-head {
+    padding: 22px 0 14px;
+  }
+  .section-head h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--blue);
+    margin-bottom: 4px;
+  }
+  .section-head p { font-size: 13px; color: var(--gray); }
+
+  /* ── FIELD ── */
+  .field { margin-bottom: 16px; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 7px;
+    opacity: 0.8;
+  }
+  label span.req { color: var(--gold); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="tel"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--white);
+    font-family: 'Mulish', sans-serif;
+    font-size: 15px;
+    color: var(--blue);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--blue2);
+    box-shadow: 0 0 0 3px rgba(26,82,143,0.10);
+  }
+  input.error, textarea.error { border-color: var(--red) !important; }
+
+  textarea { min-height: 120px; resize: none; line-height: 1.6; }
+
+  .field-hint { font-size: 11.5px; color: var(--gray); margin-top: 5px; }
+  .field-err  { font-size: 11.5px; color: var(--red);  margin-top: 5px; display: none; }
+  .field-err.show { display: block; }
+
+  /* select arrow */
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    pointer-events: none;
+    font-size: 16px;
+  }
+
+  /* ── SOHA CARDS ── */
+  .soha-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .soha-card {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--white);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    transition: all 0.22s;
+    user-select: none;
+  }
+  .soha-card:active { transform: scale(0.97); }
+  .soha-card.selected {
+    border-color: var(--blue);
+    background: rgba(26,58,107,0.05);
+  }
+  .soha-icon {
+    font-size: 26px;
+    line-height: 1;
+  }
+  .soha-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blue);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .soha-card.selected .soha-name { color: var(--blue); }
+
+  /* ── CHAR COUNT ── */
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+  .char-count.warn { color: var(--gold); }
+
+  /* ── CONFIRM CARD ── */
+  .confirm-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .confirm-card-head {
+    background: linear-gradient(90deg, var(--blue), var(--blue2));
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .confirm-card-head .icon { font-size: 20px; }
+  .confirm-card-head h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--white);
+    font-size: 16px;
+  }
+  .confirm-row {
+    display: flex;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .confirm-row:last-child { border-bottom: none; }
+  .confirm-key {
+    flex: 0 0 90px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--gray);
+    padding-top: 2px;
+  }
+  .confirm-val {
+    flex: 1;
+    font-size: 14px;
+    color: var(--blue);
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  /* ── AGREEMENT ── */
+  .agreement {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(200,168,75,0.08);
+    border: 1px solid rgba(200,168,75,0.3);
+    border-radius: 10px;
+    padding: 13px 14px;
+    margin: 18px 0 4px;
+    cursor: pointer;
+  }
+  .agreement input[type="checkbox"] {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--blue);
+    margin-top: 1px;
+    cursor: pointer;
+  }
+  .agreement p {
+    font-size: 12.5px;
+    color: var(--blue);
+    line-height: 1.5;
+  }
+  .agreement p strong { color: var(--gold); }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Mulish', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--blue2));
+    color: var(--white);
+    box-shadow: 0 4px 16px rgba(26,58,107,0.3);
+  }
+  .btn-primary:disabled {
+    background: #B0BAC8;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-ghost {
+    background: var(--white);
+    color: var(--blue);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: var(--white);
+    box-shadow: 0 4px 16px rgba(200,168,75,0.35);
+  }
+
+  /* ── SUCCESS ── */
+  .success-wrap {
+    display: none;
+    text-align: center;
+    padding: 30px 20px;
+    animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .success-wrap.show { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .success-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--green), #27AE60);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+    box-shadow: 0 6px 24px rgba(26,122,74,0.3);
+  }
+  .success-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .success-sub {
+    color: var(--gray);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .id-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--white);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+  }
+  .id-badge .dot { font-size: 20px; }
+
+  /* ── DECORATIVE LINE ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 18px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .divider span {
+    font-size: 16px;
+    color: var(--gold);
+  }
+
+  /* ── LOADER ── */
+  .loader {
+    display: none;
+    width: 20px; height: 20px;
+    border: 2.5px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+  }
+  .loading .loader { display: inline-block; }
+  .loading .btn-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="emblem">
+      <div class="emblem-icon">🏛️</div>
+      <div class="emblem-text">
+        <div class="org">O'zbekiston Respublikasi</div>
+        <div class="dept">Fuqarolar Murojaatlari</div>
+      </div>
+    </div>
+    <div class="header-title">Murojaat Qoldirish</div>
+    <div class="header-sub">Muammongizni bizga bildiring — biz hal etamiz</div>
+  </div>
+</div>
+
+<!-- STEP PROGRESS -->
+<div class="progress-wrap">
+  <div class="steps">
+    <div class="step active" id="s1">
+      <div class="step-dot">1</div>
+      <div class="step-label">Shaxsiy<br>ma'lumot</div>
+    </div>
+    <div class="step" id="s2">
+      <div class="step-dot">2</div>
+      <div class="step-label">Muammo<br>soha</div>
+    </div>
+    <div class="step" id="s3">
+      <div class="step-dot">3</div>
+      <div class="step-label">Tasdiq</div>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- ── SLIDE 1: Shaxsiy ── -->
+  <div class="slide active" id="slide1">
+    <div class="section-head">
+      <h2>Shaxsiy ma'lumotlar</h2>
+      <p>Iltimos, to'g'ri ma'lumot kiriting</p>
+    </div>
+    <div class="divider"><span>✦</span></div>
+
+    <div class="field">
+      <label>To'liq ism<span class="req">*</span></label>
+      <input type="text" id="fio" placeholder="Rahimov Sardor Bahodir o'g'li" />
+      <div class="field-err" id="err-fio">Ism familiyani kiriting</div>
+    </div>
+
+    <div class="field">
+      <label>Telefon raqam<span class="req">*</span></label>
+      <input type="tel" id="phone" placeholder="+998 90 123 45 67" />
+      <div class="field-hint">Xalqaro format: +998XXXXXXXXX</div>
+      <div class="field-err" id="err-phone">To'g'ri telefon raqam kiriting</div>
+    </div>
+
+    <div class="field">
+      <label>Mahalla / Ko'cha<span class="req">*</span></label>
+      <input type="text" id="mahalla" placeholder="Tinchlik mahallasi, Navruz ko'chasi 12" />
+      <div class="field-err" id="err-mahalla">Mahalla nomini kiriting</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goNext(1)">Davom etish →</button>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 2: Soha + Matn ── -->
+  <div class="slide" id="slide2">
+    <div class="section-head">
+      <h2>Muammo tavsifi</h2>
+      <p>Soha tanlang va muammoni yozing</p>
+    </div>
+    <div class="divider"><span>✦</span></div>
+
+    <div class="field">
+      <label>Muammo sohasi<span class="req">*</span></label>
+      <div class="soha-grid">
+        <div class="soha-card" onclick="selectSoha(this, 'Elektr ta\'minoti')">
+          <div class="soha-icon">⚡</div>
+          <div class="soha-name">Elektr ta'minoti</div>
+        </div>
+        <div class="soha-card" onclick="selectSoha(this, 'Gaz ta\'minoti')">
+          <div class="soha-icon">🔥</div>
+          <div class="soha-name">Gaz ta'minoti</div>
+        </div>
+        <div class="soha-card" onclick="selectSoha(this, 'Yo\'l va ko\'cha')">
+          <div class="soha-icon">🛣️</div>
+          <div class="soha-name">Yo'l va ko'cha</div>
+        </div>
+        <div class="soha-card" onclick="selectSoha(this, 'Internet va aloqa')">
+          <div class="soha-icon">📡</div>
+          <div class="soha-name">Internet va aloqa</div>
+        </div>
+        <div class="soha-card" onclick="selectSoha(this, 'Suv ta\'minoti')">
+          <div class="soha-icon">💧</div>
+          <div class="soha-name">Suv ta'minoti</div>
+        </div>
+        <div class="soha-card" onclick="selectSoha(this, 'Ijtimoiy yordam')">
+          <div class="soha-icon">🤝</div>
+          <div class="soha-name">Ijtimoiy yordam</div>
+        </div>
+        <div class="soha-card" onclick="selectSoha(this, 'Kommunal xizmat')">
+          <div class="soha-icon">🏘️</div>
+          <div class="soha-name">Kommunal xizmat</div>
+        </div>
+        <div class="soha-card" onclick="selectSoha(this, 'Boshqa')">
+          <div class="soha-icon">📋</div>
+          <div class="soha-name">Boshqa</div>
+        </div>
+      </div>
+      <div class="field-err" id="err-soha">Soha tanlang</div>
+    </div>
+
+    <div class="field" style="margin-top:20px">
+      <label>Muammoni batafsil yozing<span class="req">*</span></label>
+      <textarea id="mtext" placeholder="Muammo yoki taklifingizni to'liq va aniq yozing. Ko'cha, uy raqami, vaqt kabi tafsilotlarni kiriting." maxlength="800" oninput="countChars()"></textarea>
+      <div class="char-count" id="charCount">0 / 800</div>
+      <div class="field-err" id="err-text">Kamida 20 ta belgi kiriting</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goBack(2)">← Orqaga</button>
+      <button class="btn btn-primary" onclick="goNext(2)">Davom etish →</button>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 3: Tasdiq ── -->
+  <div class="slide" id="slide3">
+    <div class="section-head">
+      <h2>Ma'lumotni tasdiqlash</h2>
+      <p>Yuborishdan oldin tekshirib chiqing</p>
+    </div>
+    <div class="divider"><span>✦</span></div>
+
+    <div class="confirm-card">
+      <div class="confirm-card-head">
+        <div class="icon">📋</div>
+        <h3>Murojaat ma'lumotlari</h3>
+      </div>
+      <div class="confirm-row">
+        <div class="confirm-key">F.I.Sh</div>
+        <div class="confirm-val" id="c-fio">—</div>
+      </div>
+      <div class="confirm-row">
+        <div class="confirm-key">Telefon</div>
+        <div class="confirm-val" id="c-phone">—</div>
+      </div>
+      <div class="confirm-row">
+        <div class="confirm-key">Mahalla</div>
+        <div class="confirm-val" id="c-mahalla">—</div>
+      </div>
+      <div class="confirm-row">
+        <div class="confirm-key">Soha</div>
+        <div class="confirm-val" id="c-soha">—</div>
+      </div>
+      <div class="confirm-row">
+        <div class="confirm-key">Muammo</div>
+        <div class="confirm-val" id="c-text">—</div>
+      </div>
+    </div>
+
+    <label class="agreement" for="agree">
+      <input type="checkbox" id="agree" onchange="toggleSubmit()" />
+      <p>Men <strong>shaxsiy ma'lumotlarimni</strong> qayta ishlashga rozilik bildiraman va kiritilgan ma'lumotlar to'g'ri ekanligini tasdiqlayman.</p>
+    </label>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goBack(3)">← Orqaga</button>
+      <button class="btn btn-gold" id="submitBtn" onclick="submitForm()" disabled>
+        <span class="btn-text">✅ Yuborish</span>
+        <span class="loader"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SUCCESS ── -->
+  <div class="success-wrap" id="successWrap">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Murojaatingiz qabul qilindi!</div>
+    <div class="success-sub">
+      Murojaatingiz ro'yxatga olindi va mas'ul mutaxassislarga yuborildi.<br>
+      ID raqamingizni saqlang — holat tekshirishda kerak bo'ladi.
+    </div>
+    <div class="id-badge">
+      <span class="dot">🆔</span>
+      <span id="appealId">—</span>
+    </div>
+    <button class="btn btn-primary" onclick="closeMiniApp()">Botga qaytish</button>
+  </div>
+
+</div><!-- /body -->
+
+<script>
+  // Telegram WebApp
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  let selectedSoha = "";
+  let currentSlide = 1;
+
+  // ── SELECT SOHA ──
+  function selectSoha(el, name) {
+    document.querySelectorAll('.soha-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedSoha = name;
+    showErr('soha', false);
+  }
+
+  // ── CHAR COUNT ──
+  function countChars() {
+    const ta = document.getElementById('mtext');
+    const cc = document.getElementById('charCount');
+    const n  = ta.value.length;
+    cc.textContent = `${n} / 800`;
+    cc.classList.toggle('warn', n > 650);
+  }
+
+  // ── TOGGLE SUBMIT ──
+  function toggleSubmit() {
+    document.getElementById('submitBtn').disabled = !document.getElementById('agree').checked;
+  }
+
+  // ── SHOW ERROR ──
+  function showErr(id, show, msg = "") {
+    const el = document.getElementById('err-' + id);
+    if (!el) return;
+    el.classList.toggle('show', show);
+    if (msg) el.textContent = msg;
+    const inp = document.getElementById(id);
+    if (inp) inp.classList.toggle('error', show);
+  }
+
+  // ── VALIDATE SLIDE ──
+  function validateSlide(n) {
+    let ok = true;
+    if (n === 1) {
+      const fio    = document.getElementById('fio').value.trim();
+      const phone  = document.getElementById('phone').value.trim();
+      const mahalla= document.getElementById('mahalla').value.trim();
+      if (fio.length < 3)   { showErr('fio', true); ok = false; } else showErr('fio', false);
+      if (!/^\+?[\d\s\-]{9,}$/.test(phone)) { showErr('phone', true); ok = false; } else showErr('phone', false);
+      if (mahalla.length < 3) { showErr('mahalla', true); ok = false; } else showErr('mahalla', false);
+    }
+    if (n === 2) {
+      const txt = document.getElementById('mtext').value.trim();
+      if (!selectedSoha) { showErr('soha', true); ok = false; } else showErr('soha', false);
+      if (txt.length < 20) { showErr('text', true); ok = false; } else showErr('text', false);
+    }
+    return ok;
+  }
+
+  // ── STEP ──
+  function setStep(n) {
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById('s' + i);
+      s.classList.remove('active', 'done');
+      if (i < n)  s.classList.add('done');
+      if (i === n) s.classList.add('active');
+      const dot = s.querySelector('.step-dot');
+      dot.textContent = i < n ? '✓' : i;
+    }
+  }
+
+  // ── NEXT ──
+  function goNext(from) {
+    if (!validateSlide(from)) return;
+    if (from === 2) fillConfirm();
+    document.getElementById('slide' + from).classList.remove('active');
+    document.getElementById('slide' + (from + 1)).classList.add('active');
+    currentSlide = from + 1;
+    setStep(currentSlide);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── BACK ──
+  function goBack(from) {
+    document.getElementById('slide' + from).classList.remove('active');
+    document.getElementById('slide' + (from - 1)).classList.add('active');
+    currentSlide = from - 1;
+    setStep(currentSlide);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── FILL CONFIRM ──
+  function fillConfirm() {
+    document.getElementById('c-fio').textContent    = document.getElementById('fio').value.trim();
+    document.getElementById('c-phone').textContent  = document.getElementById('phone').value.trim();
+    document.getElementById('c-mahalla').textContent= document.getElementById('mahalla').value.trim();
+    document.getElementById('c-soha').textContent   = selectedSoha;
+    document.getElementById('c-text').textContent   = document.getElementById('mtext').value.trim();
+  }
+
+  // ── SUBMIT ──
+  function submitForm() {
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const data = {
+      fio:     document.getElementById('fio').value.trim(),
+      phone:   document.getElementById('phone').value.trim(),
+      mahalla: document.getElementById('mahalla').value.trim(),
+      soha:    selectedSoha,
+      text:    document.getElementById('mtext').value.trim(),
+    };
+
+    // Send to bot via WebApp
+    if (tg) {
+      tg.sendData(JSON.stringify(data));
+    }
+
+    // Show success (bot will confirm with real ID)
+    setTimeout(() => {
+      const fakeId = 'UCH-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+      document.getElementById('appealId').textContent = fakeId;
+
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      document.getElementById('successWrap').classList.add('show');
+      document.querySelector('.progress-wrap').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 800);
+  }
+
+  // ── CLOSE ──
+  function closeMiniApp() {
+    if (tg) tg.close();
+  }
+</script>
+</body>
+</html>
